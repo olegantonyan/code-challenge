@@ -1,0 +1,16 @@
+AllCops:
+  TargetRubyVersion: 3.4
+  NewCops: enable
+  SuggestExtensions: false
+
+Style/Documentation:
+  Enabled: false # not needed here
+
+Style/FrozenStringLiteralComment:
+  Enabled: false # not needed anymore in Ruby 3.4
+
+Layout/FirstArrayElementIndentation:
+  Enabled: false # personal preference
+
+Style/RedundantConstantBase:
+  Enabled: false # in Rails autoloader sometimes shots in the foot - keep top-level ::Constant

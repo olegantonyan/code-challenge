@@ -1,0 +1,8 @@
+#!/usr/bin/env ruby
+
+$LOAD_PATH.unshift File.expand_path('../lib', __dir__)
+
+require 'google_artwork'
+require 'json'
+
+puts ::JSON.pretty_generate(::GoogleArtwork.parse_to_hash(::ARGF))
