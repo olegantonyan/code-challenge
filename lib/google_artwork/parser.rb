@@ -21,20 +21,20 @@ module GoogleArtwork
     def extract_artworks(document)
       thumbnails_from_js = js_images(document)
 
-      document.xpath('//a[contains(@href, "/search?")][img]').filter_map do |link|
-        img = link.at_xpath('./img')
+      document.xpath('//div[@role="main"]//a[contains(@href, "/search?")][img]').filter_map do |a|
+        img = a.at_xpath('./img')
 
         ::GoogleArtwork::Artwork.new(
-          name: img['alt'],
-          year: link.text[/\d\d\d\d/],
-          link: build_uri(link['href']),
+          name: a.at_css('.pgNMRc')&.text,
+          year: a.at_css('.cxzHyb')&.text,
+          link: build_uri(a['href']),
           thumbnail: build_uri(thumbnails_from_js.fetch(img['id'], img['data-src']))
         )
       end
     end
 
     def js_images(document)
-      document.xpath('//script').each_with_object({}) do |elem, acc|
+      document.xpath('//div[@role="main"]//script').each_with_object({}) do |elem, acc|
         base64 = elem.text[/var\s+s='([^']+)'/, 1]
         id = elem.text[/var\s+ii=\['([^']+)'/, 1]
 
