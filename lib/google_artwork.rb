@@ -1,3 +1,5 @@
+require 'super_awesome_print'
+
 require_relative 'google_artwork/version'
 require_relative 'google_artwork/parser'
 

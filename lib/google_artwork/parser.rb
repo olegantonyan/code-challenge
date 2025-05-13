@@ -12,16 +12,18 @@ module GoogleArtwork
 
     def call(html)
       document = Nokogiri::HTML5(html)
-      extract_artworks(document).then { ::GoogleArtwork::Artworks.new(it) }
+      thumbnails_from_js = js_images(document)
+      artworks = extract_artworks(document, thumbnails_from_js)
+      artworks = extract_images(document, thumbnails_from_js) if artworks.empty?
+      ::GoogleArtwork::Artworks.new(artworks)
     end
 
     private
 
     attr_reader :root_url
 
-    def extract_artworks(document)
-      thumbnails_from_js = js_images(document)
-
+    def extract_artworks(document, thumbnails_from_js)
+      # "Artworks" section when searching for painters
       document.xpath('//div[@role="main"]//a[contains(@href, "/search?")][img]').filter_map do |a|
         img = a.at_xpath('./img')
 
@@ -34,8 +36,22 @@ module GoogleArtwork
       end.freeze
     end
 
+    def extract_images(document, thumbnails_from_js)
+      # "Images" section when searching for something with images
+      document.xpath('//div[@class="w43QB EXH1Ce"]').filter_map do |div|
+        img = div.at_xpath('.//img')
+
+        ::GoogleArtwork::Artwork.new(
+          name: img['alt'],
+          year: nil, # cannot assume date here
+          link: div.at_xpath('./a')['href'],
+          thumbnail: build_uri(thumbnails_from_js.fetch(img['id'], img['src']))
+        )
+      end
+    end
+
     def js_images(document)
-      document.xpath('//div[@role="main"]//script').each_with_object({}) do |elem, acc|
+      document.xpath('//script').each_with_object({}) do |elem, acc|
         base64 = elem.text[/var\s+s='([^']+)'/, 1]
         id = elem.text[/var\s+ii=\['([^']+)'/, 1]
 
