@@ -7,11 +7,12 @@ module GoogleArtwork
   class Parser
     def initialize(root_url:)
       @root_url = ::URI.parse(root_url)
+      freeze
     end
 
     def call(html)
       document = Nokogiri::HTML5(html)
-      extract_artworks(document)
+      extract_artworks(document).then { ::GoogleArtwork::Artworks.new(it) }
     end
 
     private
@@ -30,7 +31,7 @@ module GoogleArtwork
           link: build_uri(a['href']),
           thumbnail: build_uri(thumbnails_from_js.fetch(img['id'], img['data-src']))
         )
-      end
+      end.freeze
     end
 
     def js_images(document)

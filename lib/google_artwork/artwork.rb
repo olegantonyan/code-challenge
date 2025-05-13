@@ -8,4 +8,12 @@ module GoogleArtwork
       h.freeze
     end
   end
+
+  class Artworks < ::Array
+    def serialize
+      {
+        artworks: map(&:serialize)
+      }.freeze
+    end
+  end
 end
